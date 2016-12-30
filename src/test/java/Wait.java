@@ -44,4 +44,7 @@ public class Wait {
     public static void implicitlyWaitBySeconds(WebDriver driver, long time) { //隐式等待
         driver.manage().timeouts().implicitlyWait(time, TimeUnit.SECONDS);
     }
+
+
+
 }

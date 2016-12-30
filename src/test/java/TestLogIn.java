@@ -1,44 +1,49 @@
 import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.android.AndroidDriver;
+import org.apache.commons.io.FileUtils;
 import org.junit.*;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static io.appium.java_client.android.AndroidKeyCode.KEYCODE_DEL;
+import static io.appium.java_client.android.AndroidKeyCode.KEYCODE_MOVE_END;
 
 /**
  * Created by Albert on 2016-11-1 0001.
- * 测试wooplus登录功能
+ * 测试wooplus登录功能，玩card，发moment，上传头像，注册
  */
 public class TestLogIn {
-    private static AppiumDriver driver;
-
-   /* public static void main(String[] args) {
-        System.out.println("Hello world.");
-    }*/
+    private static AndroidDriver driver;
 
     @BeforeClass //只需要在所有测试用例执行之前执行一次就可以了
     public static void setUp() throws MalformedURLException { //标有BeforeClass注解的方法必须是static的
         File userPath = new File(System.getProperty("user.dir"));
         File appPath = new File(userPath, "app");
         File app = new File(appPath, "WooPlus280(58_10-25).apk");
-        DesiredCapabilities capabilities = new DesiredCapabilities();
 
-        capabilities.setCapability("app", app.getAbsolutePath());
-        capabilities.setCapability(CapabilityType.BROWSER_NAME, "");
+        DesiredCapabilities capabilities = new DesiredCapabilities();
+        capabilities.setCapability("app", app.getAbsolutePath());//获取到APP的绝对路径
+        //capabilities.setCapability(CapabilityType.BROWSER_NAME, "");
+        capabilities.setCapability("noReset", true);//当app已经被安装是就不会再次被安装，节约时间
         capabilities.setCapability("platformName", "Android");//是启动安卓,还是IOS,还是Firefox ios
-        capabilities.setCapability("deviceName", "127.0.0.1:62001 device");//启动的设备是真机还是模拟器，真机名称可在cmd中使用adb devices查看
+        capabilities.setCapability("deviceName", "ZX1G429ML2");//启动的设备是真机还是模拟器，真机名称可在cmd中使用adb devices查看
         capabilities.setCapability("platformVersion", "6.0");//设置安卓系统版本
-        capabilities.setCapability("noRset", true);
+        capabilities.setCapability("unicodeKeyboard", true);//支持中文输入
+        capabilities.setCapability("resetKeyboard", true);//重置为默认的输入法
+        capabilities.setCapability("noSign", true);//安装时不对app进行重签名，因为有些app重签名之后可能无法使用
         capabilities.setCapability("appPackage", "com.mason.wooplus");//app的包名
         capabilities.setCapability("appActivity", "com.mason.wooplus.activity.SplashActivity");//入口activity
         driver = new AndroidDriver(new URL("http://127.0.0.1:4723/wd/hub"), capabilities);
-        Wait.implicitlyWaitBySeconds(driver,3);
+        Wait.implicitlyWaitBySeconds(driver,5);
         //driver.manage().timeouts().implicitlyWait(3000, TimeUnit.MILLISECONDS);//隐式等待，driver每次执行命令的超时时间
         //driver.manage().timeouts().implicitlyWait(3, TimeUnit.SECONDS);
         /*try {
@@ -47,7 +52,6 @@ public class TestLogIn {
             e.printStackTrace();
         }*/
     }
-
 
     @AfterClass //只需在所有测试用例执行完之后执行一次就可以了
     public static void tearDown() {
@@ -59,9 +63,10 @@ public class TestLogIn {
 
     public void clearEditText(WebElement et) {
         et.click();
-        String string = et.getText().trim();
+        String string = et.getText();
         if (string != "") {
-            et.clear();
+            driver.pressKeyCode(KEYCODE_MOVE_END);  //将鼠标移到末尾
+            for(int i=0; i<string.length(); i++) driver.pressKeyCode(KEYCODE_DEL); //从后往前挨个删除
         } else {
             System.out.println("This edittext is null");
         }
@@ -70,39 +75,47 @@ public class TestLogIn {
     //@Test(expected = WebDriverException.class)
     @Test
     public void testLogIn() throws Exception { //断言
-
-        driver.findElementById("com.mason.wooplus:id/sign_in").click();
-        List<WebElement> webElements = driver.findElementsByClassName("android.widget.EditText");
+        if (isElementExist("com.mason.wooplus:id/me")) {  //判断是否已经登陆，若已经登陆了就退出登陆
+            driver.findElementById("com.mason.wooplus:id/me").click();
+            Wait.explicitlyWaitForID(driver, 1, "right_menu_settings").click();
+            List<WebElement> elements = driver.findElements(By.className("android.widget.RelativeLayout"));
+            elements.get(3).click();
+            Wait.explicitlyWaitForID(driver, 1, "com.mason.wooplus:id/buttonOk").click();
+        }
+        Wait.explicitlyWaitForID(driver, 2, "com.mason.wooplus:id/sign_in").click();
+        List<WebElement> webElements = driver.findElements(By.className("android.widget.EditText"));
         clearEditText(webElements.get(0));
-        webElements.get(0).sendKeys("k98@gmail.com");
-        webElements.get(1).sendKeys("kkkkkk");
+        //输入注册邮箱和密码
+        webElements.get(0).sendKeys("f21@gmail.com");
+        webElements.get(1).sendKeys("ffffff");
         driver.findElementById("com.mason.wooplus:id/submit_btn").click();
-        WebElement card1 = Wait.explicitlyWaitForID(driver,6,"item_header");//显示等待
+        clickPlayNextAround();
+        WebElement card1 = Wait.explicitlyWaitForID(driver,12,"item_header");//显示等待
         card1.click();
-        WebElement like = driver.findElement(By.id("view_like_userpro"));
+        WebElement like = driver.findElement(By.id("view_like_userpro"));//profile中点击like按钮
         like.click();
-        Thread.sleep(1000);
-        if(ifExist("like")) {
-            WebElement like_btn = driver.findElementById("like");
-            like_btn.click();
+        threadSleep(1000);
+//        System.out.println("是否存在提示框：com.mason.wooplus:id/like" + ifExist("com.mason.wooplus:id/like"));
+        if(isElementExist("com.mason.wooplus:id/like")) {
+            driver.findElementById("com.mason.wooplus:id/like").click();
         }
-        Thread.sleep(1000);
-        if(ifExist("com.mason.wooplus:id/user_profile_btn")) {
-            WebElement element = driver.findElement(By.id("com.mason.wooplus:id/cancel"));
-            element.click();
+        threadSleep(1000);
+        if(isElementExist("com.mason.wooplus:id/user_profile_btn")) {
+            driver.findElement(By.id("com.mason.wooplus:id/cancel")).click();
         }
+        clickPlayNextAround();
         WebElement card2 = Wait.explicitlyWaitForID(driver,2,"item_header");
         card2.click();
-        WebElement pass = driver.findElement(By.id("view_pass_userpro"));
+        WebElement pass = driver.findElement(By.id("view_pass_userpro"));//profile中点击pass按钮
         pass.click();
-        Thread.sleep(1000);
-        if(ifExist("pass")) {
+        threadSleep(1000);
+        if(isElementExist("pass")) {
             WebElement pass_btn = driver.findElementById("pass");
             pass_btn.click();
         }
         WebElement like1 = Wait.explicitlyWaitForID(driver, 2, "like_btn");
         like1.click();
-        if(ifExist("com.mason.wooplus:id/user_profile_btn")) {
+        if(isElementExist("com.mason.wooplus:id/user_profile_btn")) {
             WebElement element = driver.findElement(By.id("com.mason.wooplus:id/cancel"));
             element.click();
         }
@@ -116,27 +129,134 @@ public class TestLogIn {
         sex2.click();
         WebElement submit1 = Wait.explicitlyWaitForID(driver, 1, "submit_btn");
         submit1.click();
-        WebElement picks = Wait.explicitlyWaitForName(driver, 6, "Picks");
+        WebElement picks = Wait.explicitlyWaitForName(driver, 12, "Picks");
         picks.click();
         WebElement user1 = Wait.explicitlyWaitForID(driver, 3, "user1_header");
         user1.click();
-        if(ifExist("Got It")) {
+        if(isElementExist("com.mason.wooplus:id/got_it")) {
             WebElement element = driver.findElement(By.id("com.mason.wooplus:id/got_it"));
             element.click();
         }
         WebElement poke = Wait.explicitlyWaitForID(driver, 1, "bottom_poke");
         poke.click();
-        System.out.println("第一个测试用例完成。。");
+        Wait.explicitlyWaitForID(driver, 1, "com.mason.wooplus:id/left_btn_icon").click();
+        Wait.explicitlyWaitForName(driver, 1, "Match").click();
+        int width = (Integer) getWidthAndHeight().get("width"); //获取屏幕宽度
+        int height = (Integer) getWidthAndHeight().get("height"); //获取屏幕高度
+        swipFromCenterToRight(width, height, 2000); //右滑
+        swipFromCenterToLeft(width, height, 2000); //左滑
+        snapshot(driver, "first.jpg");
+        System.out.println("First test_case was done.");
         //driver.manage().timeouts().pageLoadTimeout(5000, TimeUnit.MILLISECONDS);
         //driver.getPageSource();//列出界面中的元素
         //driver.findElementByAndroidUIAutomator("new UiSelector().text(\"Add note\")");
         //Assert.assertTrue("Fail", true);
     }
 
+    @Test
+    public void testMoment() {
+    }
 
-    public static boolean ifExist(String string) { //判断界面中是否存在某个字符串
+    @Test
+    public void testSignUpWithEmail() {
+    }
+
+    @Test
+    public void testSignUpWithFB() {
+    }
+
+    @Test
+    public void testUpLoadPicture() {
+
+    }
+
+    private static boolean ifExist(String string) { //判断界面中是否存在某个字符串
         return driver.getPageSource().contains(string);
     }
+
+    private static Map getWidthAndHeight() { //获取屏幕的宽度和高度
+        Map<String, Integer> map = new HashMap<String, Integer>();//规定key和value的类型，不然会有警告
+        map.put("width", driver.manage().window().getSize().width);
+        map.put("height", driver.manage().window().getSize().height);
+        return map;
+    }
+
+    private static void swipFromCenterToRight(int width, int height, int ms) { //从屏幕向右滑动
+        int x1 = (int)(width * 0.05);
+        int y1 = (int)(height * 0.5);
+        int x2 = (int)(width * 0.75);
+        driver.swipe(x1, y1, x2, y1, ms);
+        Wait.implicitlyWaitBySeconds(driver, 1);
+    }
+
+    private static void swipFromCenterToLeft(int width, int height, int ms) { //从屏幕向左滑动
+        int x1 = (int)(width * 0.75);
+        int y1 = (int)(height * 0.5);
+        int x2 = (int)(width * 0.05);
+        driver.swipe(x1, y1, x2, y1, ms);
+        Wait.implicitlyWaitBySeconds(driver, 1);
+    }
+
+    private static boolean isElementExist(String str) { //通过元素ID来判断元素是否存在
+        try {
+            driver.findElement(By.id(str));
+        } catch (org.openqa.selenium.NoSuchElementException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    private static void clickPlayNextAround() { //若页面中检测到有play next around按钮就点击按钮
+        String str = "com.mason.wooplus:id/imagebutton_start";
+        if (isElementExist(str)) {
+            driver.findElementById(str).click();
+            Wait.implicitlyWaitBySeconds(driver, 3);
+        }
+    }
+
+    /**
+     * This Method create for take screenshot
+     * 捕获截图功能
+     * @param drivername
+     * @param filename
+     * 调用snapshot((TakesScreenshot) driver, "zhihu_showClose.png");
+     */
+    private static void snapshot(TakesScreenshot drivername, String filename) {
+        // this method will take screen shot ,require two parameters ,one is
+        // driver name, another is file name
+
+        String currentPath = System.getProperty("user.dir"); // get current work
+        // folder
+        File scrFile = drivername.getScreenshotAs(OutputType.FILE);
+        // Now you can do whatever you need to do with it, for example copy
+        // somewhere
+        try {
+            System.out.println("save snapshot path is:" + currentPath + "/"
+                    + filename);
+            FileUtils.copyFile(scrFile, new File(currentPath + "\\" + filename));
+        } catch (IOException e) {
+            System.out.println("Can't save screenshot");
+            e.printStackTrace();
+        } finally {
+            System.out.println("screen shot finished, it's in " + currentPath
+                    + " folder");
+        }
+    }
+
+    private static void acceptAlert() {  //对警告框的处理
+        Alert alert = driver.switchTo().alert();
+        alert.accept(); //对警告框接收
+//        alert.dismiss(); //对警告框拒绝
+    }
+
+    private static void threadSleep(long ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    } //线程睡觉
 
     /*@Ignore
     @Test(timeout = 200)
