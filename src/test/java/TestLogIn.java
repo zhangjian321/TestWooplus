@@ -155,10 +155,12 @@ public class TestLogIn {
 
     @Test
     public void testMoment() {
+        System.out.println("Hello world");
     }
 
     @Test
     public void testSignUpWithEmail() {
+        System.out.println("Hello world");
     }
 
     @Test
