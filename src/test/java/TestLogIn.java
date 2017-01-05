@@ -35,7 +35,7 @@ public class TestLogIn {
         //capabilities.setCapability(CapabilityType.BROWSER_NAME, "");
         capabilities.setCapability("noReset", true);//当app已经被安装是就不会再次被安装，节约时间
         capabilities.setCapability("platformName", "Android");//是启动安卓,还是IOS,还是Firefox ios
-        capabilities.setCapability("deviceName", "ZX1G429ML2");//启动的设备是真机还是模拟器，真机名称可在cmd中使用adb devices查看
+        capabilities.setCapability("deviceName", "50519a29");//启动的设备是真机还是模拟器，真机名称可在cmd中使用adb devices查看
         capabilities.setCapability("platformVersion", "6.0");//设置安卓系统版本
         capabilities.setCapability("unicodeKeyboard", true);//支持中文输入
         capabilities.setCapability("resetKeyboard", true);//重置为默认的输入法
@@ -61,6 +61,7 @@ public class TestLogIn {
         driver = null;
     }
 
+    //清空输入框中的文本，只用clear方法是不行的
     public void clearEditText(WebElement et) {
         et.click();
         String string = et.getText();
@@ -86,8 +87,8 @@ public class TestLogIn {
         List<WebElement> webElements = driver.findElements(By.className("android.widget.EditText"));
         clearEditText(webElements.get(0));
         //输入注册邮箱和密码
-        webElements.get(0).sendKeys("f21@gmail.com");
-        webElements.get(1).sendKeys("ffffff");
+        webElements.get(0).sendKeys("m105@gmail.com");
+        webElements.get(1).sendKeys("mmmmmm");
         driver.findElementById("com.mason.wooplus:id/submit_btn").click();
         clickPlayNextAround();
         WebElement card1 = Wait.explicitlyWaitForID(driver,12,"item_header");//显示等待
@@ -129,9 +130,9 @@ public class TestLogIn {
         sex2.click();
         WebElement submit1 = Wait.explicitlyWaitForID(driver, 1, "submit_btn");
         submit1.click();
-        WebElement picks = Wait.explicitlyWaitForName(driver, 12, "Picks");
-        picks.click();
-        WebElement user1 = Wait.explicitlyWaitForID(driver, 3, "user1_header");
+        threadSleep(2000);
+        driver.findElementByName("Picks").click();
+        WebElement user1 = Wait.explicitlyWaitForID(driver, 8, "user1_header");
         user1.click();
         if(isElementExist("com.mason.wooplus:id/got_it")) {
             WebElement element = driver.findElement(By.id("com.mason.wooplus:id/got_it"));
@@ -145,8 +146,7 @@ public class TestLogIn {
         int height = (Integer) getWidthAndHeight().get("height"); //获取屏幕高度
         swipFromCenterToRight(width, height, 2000); //右滑
         swipFromCenterToLeft(width, height, 2000); //左滑
-        snapshot(driver, "first.jpg");
-        System.out.println("First test_case was done.");
+        snapshot(driver, "card.jpg");
         //driver.manage().timeouts().pageLoadTimeout(5000, TimeUnit.MILLISECONDS);
         //driver.getPageSource();//列出界面中的元素
         //driver.findElementByAndroidUIAutomator("new UiSelector().text(\"Add note\")");
@@ -155,19 +155,27 @@ public class TestLogIn {
 
     @Test
     public void testMoment() {
-        System.out.println("Hello world");
+        driver.findElementById("com.mason.wooplus:id/camera").click();
+        Wait.explicitlyWaitForID(driver, 1, "com.mason.wooplus:id/moments_post_view").click();
+        Wait.explicitlyWaitForID(driver, 1, "com.mason.wooplus:id/choose_photo").click();
+
     }
 
     @Test
     public void testSignUpWithEmail() {
-        System.out.println("Hello world");
+        System.out.println("test two");
     }
 
     @Test
+    public void testThree() {
+        System.out.println("test three");
+    }
+
+    @Ignore
     public void testSignUpWithFB() {
     }
 
-    @Test
+    @Ignore
     public void testUpLoadPicture() {
 
     }
@@ -233,10 +241,14 @@ public class TestLogIn {
         File scrFile = drivername.getScreenshotAs(OutputType.FILE);
         // Now you can do whatever you need to do with it, for example copy
         // somewhere
+        File file = new File(currentPath + "\\" + filename);
+        if (file.exists()) {
+            file.delete();
+        }
         try {
             System.out.println("save snapshot path is:" + currentPath + "/"
                     + filename);
-            FileUtils.copyFile(scrFile, new File(currentPath + "\\" + filename));
+            FileUtils.copyFile(scrFile, file);
         } catch (IOException e) {
             System.out.println("Can't save screenshot");
             e.printStackTrace();
@@ -246,19 +258,21 @@ public class TestLogIn {
         }
     }
 
-    private static void acceptAlert() {  //对警告框的处理
+    //对警告框的处理
+    private static void acceptAlert() {
         Alert alert = driver.switchTo().alert();
         alert.accept(); //对警告框接收
 //        alert.dismiss(); //对警告框拒绝
     }
 
+    //线程睡觉
     private static void threadSleep(long ms) {
         try {
             Thread.sleep(ms);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-    } //线程睡觉
+    }
 
     /*@Ignore
     @Test(timeout = 200)
