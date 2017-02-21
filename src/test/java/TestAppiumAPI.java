@@ -1,5 +1,4 @@
 import io.appium.java_client.android.AndroidDriver;
-import io.appium.java_client.android.AndroidKeyCode;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -18,10 +17,10 @@ public class TestAppiumAPI {
     private static AndroidDriver driver;
 
     @BeforeClass
-    public void setUp() throws MalformedURLException {
+    public static void setUp() throws MalformedURLException {
         DesiredCapabilities capabilities = new DesiredCapabilities();
-        capabilities.setCapability("deviceName", "Android Emulator");
-        capabilities.setCapability("platformVersion", "4.4");
+        capabilities.setCapability("deviceName", "167850c8");
+        capabilities.setCapability("platformVersion", "5.0");
         capabilities.setCapability("platformName", "Android");
         capabilities.setCapability("appPackage", "com.android.settings");
         capabilities.setCapability("appActivity", ".Settings");
@@ -29,8 +28,11 @@ public class TestAppiumAPI {
     }
 
     @AfterClass
-    public void tearDown() {
-        driver.quit();
+    public static void tearDown() {
+        if (driver != null) {
+            driver.quit();
+        }
+        driver = null;
     }
 
     @Test
@@ -40,4 +42,5 @@ public class TestAppiumAPI {
             driver.pressKeyCode(26);
         }
     }
+
 }

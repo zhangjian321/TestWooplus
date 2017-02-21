@@ -35,8 +35,8 @@ public class TestLogIn {
         //capabilities.setCapability(CapabilityType.BROWSER_NAME, "");
         capabilities.setCapability("noReset", true);//当app已经被安装是就不会再次被安装，节约时间
         capabilities.setCapability("platformName", "Android");//是启动安卓,还是IOS,还是Firefox ios
-        capabilities.setCapability("deviceName", "50519a29");//启动的设备是真机还是模拟器，真机名称可在cmd中使用adb devices查看
-        capabilities.setCapability("platformVersion", "6.0");//设置安卓系统版本
+        capabilities.setCapability("deviceName", "167850c8");//启动的设备是真机还是模拟器，真机名称可在cmd中使用adb devices查看
+        capabilities.setCapability("platformVersion", "5.0");//设置安卓系统版本
         capabilities.setCapability("unicodeKeyboard", true);//支持中文输入
         capabilities.setCapability("resetKeyboard", true);//重置为默认的输入法
         capabilities.setCapability("noSign", true);//安装时不对app进行重签名，因为有些app重签名之后可能无法使用
@@ -155,10 +155,12 @@ public class TestLogIn {
 
     @Test
     public void testMoment() {
+        //点击状态栏中的moment按钮
         driver.findElementById("com.mason.wooplus:id/camera").click();
+        //点击moment界面中发送moment的按钮
         Wait.explicitlyWaitForID(driver, 1, "com.mason.wooplus:id/moments_post_view").click();
+        //点击上拉菜单中的Choose from Photos选项
         Wait.explicitlyWaitForID(driver, 1, "com.mason.wooplus:id/choose_photo").click();
-
     }
 
     @Test
