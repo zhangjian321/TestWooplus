@@ -35,8 +35,8 @@ public class TestLogIn {
         //capabilities.setCapability(CapabilityType.BROWSER_NAME, "");
         capabilities.setCapability("noReset", true);//当app已经被安装是就不会再次被安装，节约时间
         capabilities.setCapability("platformName", "Android");//是启动安卓,还是IOS,还是Firefox ios
-        capabilities.setCapability("deviceName", "50519a29");//启动的设备是真机还是模拟器，真机名称可在cmd中使用adb devices查看
-        capabilities.setCapability("platformVersion", "6.0");//设置安卓系统版本
+        capabilities.setCapability("deviceName", "127.0.0.1:62001");//启动的设备是真机还是模拟器，真机名称可在cmd中使用adb devices查看
+        capabilities.setCapability("platformVersion", "4.4.2");//设置安卓系统版本
         capabilities.setCapability("unicodeKeyboard", true);//支持中文输入
         capabilities.setCapability("resetKeyboard", true);//重置为默认的输入法
         capabilities.setCapability("noSign", true);//安装时不对app进行重签名，因为有些app重签名之后可能无法使用
@@ -154,25 +154,40 @@ public class TestLogIn {
     }
 
     @Test
-    public void testMoment() {
-        driver.findElementById("com.mason.wooplus:id/camera").click();
+    public void testPlayMomentByCamera() throws Exception{
+        Wait.explicitlyWaitForID(driver, 2, "com.mason.wooplus:id/camera").click();
         Wait.explicitlyWaitForID(driver, 1, "com.mason.wooplus:id/moments_post_view").click();
-        Wait.explicitlyWaitForID(driver, 1, "com.mason.wooplus:id/choose_photo").click();
+        //点击take photo按钮
+        Wait.explicitlyWaitForID(driver, 1, "com.mason.wooplus:id/take_photo").click();
+        //点击拍照按钮
+        Wait.explicitlyWaitForID(driver, 1, "com.android.camera:id/shutter_button").click();
+        //点击选择按钮
+        Wait.explicitlyWaitForID(driver, 1, "com.android.camera:id/btn_done").click();
+        //在输入框中输入一段文本
+        Wait.explicitlyWaitForID(driver, 1, "com.mason.wooplus:id/edit").sendKeys("This is a test.");
+        //点击submit按钮
+        Wait.explicitlyWaitForID(driver, 1, "com.mason.wooplus:id/submit").click();
+        //判断是否发布moment成功（通过是否转到moment界面来判断）
+        Assert.assertTrue("Posting moment is failed", Wait.explicitlyWaitForID(driver, 5, "com.mason.wooplus:id/moments_post_view").isDisplayed());
+    }
 
+    @Test
+    public void testPlayMomentByAlbum() throws Exception{
+        Wait.explicitlyWaitForID(driver, 2, "com.mason.wooplus:id/camera").click();
+        //点击choose from photos按钮
+        Wait.explicitlyWaitForID(driver, 1, "com.mason.wooplus:id/choose_photo").click();
+        //在相册中根据像素点来点击第一个相册
+        driver.tap(1, 355, 483, 1);
+        //在第一个相册中根据像素点来点击第一张图片
+        driver.tap(1, 356, 539, 1);
+        Wait.explicitlyWaitForID(driver, 1, "com.mason.wooplus:id/submit").click();
+        //判断是否发布moment成功（通过是否转到moment界面来判断）
+        Assert.assertTrue("Posting moment is failed", Wait.explicitlyWaitForID(driver, 5, "com.mason.wooplus:id/moments_post_view").isDisplayed());
     }
 
     @Test
     public void testSignUpWithEmail() {
         System.out.println("test two");
-    }
-
-    @Test
-    public void testThree() {
-        System.out.println("test three");
-    }
-
-    @Ignore
-    public void testSignUpWithFB() {
     }
 
     @Ignore
@@ -236,11 +251,13 @@ public class TestLogIn {
         // this method will take screen shot ,require two parameters ,one is
         // driver name, another is file name
 
-        String currentPath = System.getProperty("user.dir"); // get current work
-        // folder
+        //get current user dir
+        String currentPath = System.getProperty("user.dir");
+        //ScreenShot
         File scrFile = drivername.getScreenshotAs(OutputType.FILE);
-        // Now you can do whatever you need to do with it, for example copy
-        // somewhere
+        // Now you can do whatever you need to do with it, for example copy somewhere
+
+        //create a file path
         File file = new File(currentPath + "\\" + filename);
         if (file.exists()) {
             file.delete();
@@ -248,6 +265,7 @@ public class TestLogIn {
         try {
             System.out.println("save snapshot path is:" + currentPath + "/"
                     + filename);
+            //put the ScreenShut to the create file
             FileUtils.copyFile(scrFile, file);
         } catch (IOException e) {
             System.out.println("Can't save screenshot");

@@ -18,7 +18,7 @@ public class TestAppiumAPI {
     private static AndroidDriver driver;
 
     @BeforeClass
-    public void setUp() throws MalformedURLException {
+    public static void setUp() throws MalformedURLException {
         DesiredCapabilities capabilities = new DesiredCapabilities();
         capabilities.setCapability("deviceName", "Android Emulator");
         capabilities.setCapability("platformVersion", "4.4");
@@ -29,7 +29,7 @@ public class TestAppiumAPI {
     }
 
     @AfterClass
-    public void tearDown() {
+    public static void tearDown() {
         driver.quit();
     }
 
